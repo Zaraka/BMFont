@@ -1,31 +1,9 @@
-me.state.CHARACTER_PICK = me.state.USER;
 
 var game =
         {
-            screenWidth: 400,
-            screenHeight: 220,
-            guiLayer: 15,
-            weapons: {},
-            consumables: {},
-            armors: {},
-            items: {},
-            gui: {},
-            fonts: {},
-            destroyable: {},
-            mechanic: {},
-            instances: {},
-            entities: {},
-            object_layer: 4,
-            effects: {},
-            npcs: {},
-            audio: {},
-            pathfinding: {},
-            spells: {},
-            LAYERS: {GUI: 15, NPC: 5, ITEMS: 4, TOP: 20},
-            version: "0.0.5",
             onload: function()
             {
-                if (!me.video.init('screen', this.screenWidth, this.screenHeight, true, 2.0, true)) {
+                if (!me.video.init('screen', 400, 200, true, 2.0, true)) {
                     alert("Sorry but your browser does not support html 5 canvas.");
                     return;
                 }
@@ -45,16 +23,26 @@ var game =
             {
                 // set the "Play/Ingame" Screen Object
                 me.state.set(me.state.PLAY, new game.PlayScreen());
-              
-                me.sys.fps = 30;
-
 
                 // start the game
-                me.state.change(me.state.MENU);
+                me.state.change(me.state.PLAY);
             }
         };
 
-
+game.PlayScreen = me.ScreenObject.extend({
+    init: function() {
+        this.font = null;
+    },
+    onResetEvent: function() {
+        this.font = new game.BMF_Font("assets/arakis10.bmf");
+        me.game.add(this.font);
+        me.game.sort();
+    },
+    onDestroyEvent: function() {
+        me.game.remove(this.font);
+        this.font = null;
+    }
+});
 
 window.onReady(function() {
     game.onload();

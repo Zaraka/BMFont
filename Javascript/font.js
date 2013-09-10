@@ -1,20 +1,11 @@
 game.BMF_Font = Object.extend({
     file: null,
+    content: null,
     init: function(file) {
-        var xmlhttp = new XMLHttpRequest();
-
-        if (xmlhttp.overrideMimeType) {
-            xmlhttp.overrideMimeType('text/plain');
-        }
-
-        xmlhttp.open("GET", file, false);
-        xmlhttp.responseType = "text";
-        xmlhttp.send();
+        this.file = file;
+        console.log(file);
         
-        //now it should be loaded
-        
-        console.log(xmlhttp.responseText);
-        
-        
+        var blob = me.loader.getBlob("arakis");
+        console.log(blob);
     }
 });
