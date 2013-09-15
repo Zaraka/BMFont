@@ -4958,7 +4958,7 @@ window.me = window.me || {};
                             var ax = (e.pos.x + e.hWidth) - (this.pos.x + this.hWidth);
                             var ay = (e.pos.y + e.hHeight) - (this.pos.y + this.hHeight);
                             return Math.atan2(ay, ax);
-                      },
+                        },
                         /**
                          * return the angle to the specified point
                          * @name angleToPoint
@@ -6262,7 +6262,7 @@ window.me = window.me || {};
                         // contains all the binary files loaded
                         var binList = {};
 
-                        var blobList = {};
+                        var arrayList = {};
                         // contains all the texture atlas files
                         var atlasList = {};
                         // contains all the JSON files
@@ -6398,24 +6398,22 @@ window.me = window.me || {};
                         ;
 
 
-                        function preloadBlob(data, onload, onerror) {
+                        function preloadArray(data, onload, onerror) {
                             var xmlhttp = new XMLHttpRequest();
 
-                            if (xmlhttp.overideMimeType) {
-                                xmlhttp.overrideMimeType('text/plain');
-                            }
-
                             xmlhttp.open("GET", data.src + me.nocache, true);
-                            xmlhttp.responseType = "blob";
+                            xmlhttp.responseType = "arraybuffer";
                             xmlhttp.ontimeot = onerror;
                             xmlhttp.onreadystatechange = function() {
                                 if (xmlhttp.readyState == 4) {
                                     // status = 0 when file protocol is used, or cross-domain origin,
                                     // (With Chrome use "--allow-file-access-from-files --disable-web-security")
                                     if ((xmlhttp.status == 200) || ((xmlhttp.status == 0))) {
-                                        // get the Texture Packer Atlas content
-                                        blobList[data.name] = xmlhttp.responseText;
-                                        // fire the callback
+                                        var arrayBuffer = xmlhttp.response; // Note: not oReq.responseText
+                                        //console.log(arrayBuffer);
+                                        if (arrayBuffer) {
+                                            arrayList[data.name] = new Uint8Array(arrayBuffer);
+                                        }
                                         onload();
                                     } else {
                                         onerror();
@@ -6659,8 +6657,8 @@ window.me = window.me || {};
                                     preloadTMX.call(this, res, onload, onerror);
                                     return 1;
 
-                                case "blob":
-                                    preloadBlob.call(this, res, onload, onerror);
+                                case "array":
+                                    preloadArray.call(this, res, onload, onerror);
                                     return 1;
 
                                 case "audio":
@@ -6723,6 +6721,13 @@ window.me = window.me || {};
 
                                 case "audio":
                                     return me.audio.unload(res.name);
+                                    
+                                case "array":
+                                    if (!(res.name in arrayList))
+                                        return false;
+
+                                    delete arrayList[res.name];
+                                    return true;
 
                                 default:
                                     throw "melonJS: me.loader.unload : unknown or invalid resource type : " + res.type;
@@ -6758,6 +6763,10 @@ window.me = window.me || {};
 
                             // unload all in json resources
                             for (name in jsonList)
+                                obj.unload(name);
+                            
+                            // unload all array resources
+                            for (name in arrayList)
                                 obj.unload(name);
 
                             // unload all audio resources
@@ -6826,10 +6835,10 @@ window.me = window.me || {};
 
                         };
 
-                        obj.getBlob = function(elt){
+                        obj.getArray = function(elt) {
                             elt = elt.toLowerCase();
-                            if(elt in blobList){
-                                return blobList[elt];
+                            if (elt in arrayList) {
+                                return arrayList[elt];
                             } else {
                                 return null;
                             }
@@ -11241,7 +11250,7 @@ window.me = window.me || {};
                                             var trans = tileset[me.TMX_TAG_TRANS] || null;
 
                                             this.initFromImage(image, trans);
-                                      },
+                                        },
                                         // constructor
                                         initFromImage: function(image, transparency) {
                                             if (image) {
@@ -11599,7 +11608,7 @@ window.me = window.me || {};
                                             this.hTilewidth = tilewidth / 2;
                                             this.hTileheight = tileheight / 2;
                                             this.originX = this.rows * this.hTilewidth;
-                                      },
+                                        },
                                         /** 
                                          * return true if the renderer can render the specified layer
                                          * @ignore
@@ -12317,7 +12326,7 @@ window.me = window.me || {};
                                                     this.layerData[x][y] = null;
                                                 }
                                             }
-                                      },
+                                        },
                                         /**
                                          * Return the TileId of the Tile at the specified position
                                          * @name getTileId
@@ -12812,7 +12821,7 @@ window.me = window.me || {};
                                                         throw "melonJS: " + obj.orientation + " type TMX Tile Map not supported!";
                                                     }
                                             }
-                                      },
+                                        },
                                         /**
                                          * Set tiled layer Data
                                          * @ignore
@@ -13069,7 +13078,7 @@ window.me = window.me || {};
 
                                             // free the TMXParser ressource
                                             this.TMXParser.free();
-                                      },
+                                        },
                                         readLayer: function(map, data, z) {
                                             var layer = new me.TMXLayer(map.tilewidth, map.tileheight, map.orientation, map.tilesets, z);
                                             // init the layer properly
@@ -13135,7 +13144,7 @@ window.me = window.me || {};
                                             var tileset = new me.TMXTileset();
                                             tileset.initFromXML(data);
                                             return tileset;
-                                      },
+                                        },
                                         readObjectGroup: function(map, data, z) {
                                             var name = this.TMXParser.getStringAttribute(data, me.TMX_TAG_NAME);
                                             var group = new me.TMXOBjectGroup();
